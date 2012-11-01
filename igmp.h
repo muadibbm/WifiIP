@@ -14,3 +14,9 @@
 /* TODO : any global variables and structs go here */
 
 /* TODO : prototype methods from igmp.c should be inserted here */
+
+struct ip_mreq
+{
+	struct in_addr imr_multiaddr;   /* IP multicast address of group */
+	struct in_addr imr_interface;   /* local IP address of interface */
+};
