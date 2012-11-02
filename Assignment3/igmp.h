@@ -87,3 +87,4 @@ void IGMPSendReqPacket(uchar *dst_ip, int size, int seq);
 void IGMPProcessTTLExpired(gpacket_t *in_pkt);
 void IGMPProcessEchoRequest(gpacket_t *in_pkt);
 void IGMPProcessEchoReply(gpacket_t *in_pkt);
+#endif
