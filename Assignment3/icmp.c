@@ -178,7 +178,7 @@ void ICMPProcessTTLExpired(gpacket_t *in_pkt)
 void ICMPProcessEchoRequest(gpacket_t *in_pkt)
 {
 	ip_packet_t *ipkt = (ip_packet_t *)in_pkt->data.data;
-	int iphdrlen = ipkt->ip_hdr_len *4;
+	int iphdrlen = ipkt->ip_hdr_len * 4;
 	icmphdr_t *icmphdr = (icmphdr_t *)((uchar *)ipkt + iphdrlen);
 	uchar *icmppkt_b = (uchar *)icmphdr;
 

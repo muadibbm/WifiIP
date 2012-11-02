@@ -72,7 +72,7 @@ typedef struct _vplinfo_t
 
 // function prototype go here...
 interface_t *GNETMakeEthInterface(char *vsock_name, char *device,
-			   uchar *mac_addr, uchar *nw_addr, int iface_mtu, int cforce);
+uchar *mac_addr, uchar *nw_addr, int iface_mtu, int cforce);
 interface_t *GNETMakeTapInterface(char *device, uchar *mac_addr, uchar *nw_addr);
 interface_t *findInterface(int indx);
 void *delayedServerCall(void *arg);

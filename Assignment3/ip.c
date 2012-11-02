@@ -47,7 +47,7 @@ void IPIncomingPacket(gpacket_t *in_pkt)
 {
 	char tmpbuf[MAX_TMPBUF_LEN];
 	// get a pointer to the IP packet
-        ip_packet_t *ip_pkt = (ip_packet_t *)&in_pkt->data.data;
+    ip_packet_t *ip_pkt = (ip_packet_t *)&in_pkt->data.data;
 	uchar bcast_ip[] = IP_BCAST_ADDR;
 
 	// Is this IP packet for me??
