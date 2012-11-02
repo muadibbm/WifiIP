@@ -17,23 +17,14 @@
 #include <endian.h>
 
 /* Global variables, structs and constants */
-#define IP_MAX_MEMBERSHIPS 4
-#define IGMP_V1_Router_timeout 1 //TODO : what is threshold for TTL at each router ?
+#define IP_MAX_MEMBERSHIPS 		4
+#define IGMP_V1_Router_timeout 	1 //TODO : what is threshold for TTL at each router ?
 
 // Andrey comment: I don't know if the below info has any relevance to the IGMP protocol.
 // Andrey comment: So, I will try to find some stuff online for those constants.
 
-#define IGMP_ECHO_REPLY          0      /* Echo Reply                   */
-#define IGMP_ECHO_REQUEST        8      /* Echo Request                 */
-#define IGMP_DEST_UNREACH        3      /* Destination Unreachable      */
-#define IGMP_SOURCE_QUENCH       4      /* Source Quench                */
-#define IGMP_REDIRECT            5      /* Redirect (change route)      */
-#define IGMP_TTL_EXPIRED        11      /* Time Exceeded                */
-#define IGMP_PARAMETERPROB      12      /* Parameter Problem            */
-#define IGMP_TIMESTAMP          13      /* Timestamp Request            */
-#define IGMP_TIMESTAMPREPLY     14      /* Timestamp Reply              */
-#define IGMP_INFO_REQUEST       15      /* Information Request          */
-#define IGMP_INFO_REPLY         16      /* Information Reply            */
+#define IGMP_MEMBERSHIP_QUERY   17
+#define IGMP_MEMBERSHIP_REPORT  18
 
 /* Codes for UNREACH. */
 #define IGMP_NET_UNREACH        0       /* Network Unreachable          */
@@ -52,11 +43,10 @@
 #define IGMP_REDIR_HOSTTOS      3       /* Redirect Host for TOS        */
 
 /* Codes for TIME_EXCEEDED. */
-#define IGMP_EXC_TTL            0       /* TTL count exceeded           */
+#define IGMP_TTL_EXPIRED        11      /* Time Exceeded                */
 #define IGMP_EXC_FRAGTIME       1       /* Fragment Reass time exceeded */
 
 // IGMP structure definitions go here...
-
 typedef struct _igmphdr_t
 {
 	uchar type;                  /* message type */
@@ -78,7 +68,7 @@ typedef struct _igmphdr_t
 			ushort mtu;
 		} frag;                  /* path mtu discovery */
 	} un;
-} IGMPhdr_t;
+} igmphdr_t;
 
 /* TODO : prototype methods from igmp.c should be inserted here */
 void IGMPProcessPacket(gpacket_t *in_pkt);

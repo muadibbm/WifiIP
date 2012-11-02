@@ -405,8 +405,6 @@ int IPOutgoingPacket(gpacket_t *pkt, uchar *dst_ip, int size, int newflag, int s
 	return IPOutgoingPacketChecksumAndSend(pkt, dst_ip, size, newflag, src_prot);
 }
 
-
-
 /*
  * IPSend2Output - write to the output Queue..
  */

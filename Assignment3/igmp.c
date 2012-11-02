@@ -1,5 +1,6 @@
 #include "igmp.h"
 
+// Andrey comment: We are implementing the IGMPv1 protocol as there will be no leave messages to deal with.
 void IGMPProcessPacket(gpacket_t *in_pkt)
 {
 	ip_packet_t *ip_pkt = (ip_packet_t *)in_pkt->data.data;
@@ -8,23 +9,14 @@ void IGMPProcessPacket(gpacket_t *in_pkt)
 
 	switch (igmphdr->type)
 	{
-		case IGMP_ECHO_REQUEST:
-			verbose(2, "[IGMPProcessPacket]:: IGMP processing for ECHO request");
-			IGMPProcessEchoRequest(in_pkt);
+		case IGMP_MEMBERSHIP_QUERY:
+			verbose(2, "[IGMPProcessPacket]:: IGMP processing for membership query request");
+			IGMPProcessMembershipQuery(in_pkt);
 			break;
 
-		case IGMP_ECHO_REPLY:
-			verbose(2, "[IGMPProcessPacket]:: IGMP processing for ECHO reply");
-			IGMPProcessEchoReply(in_pkt);
-			break;
-
-		case IGMP_REDIRECT:
-		case IGMP_SOURCE_QUENCH:
-		case IGMP_TIMESTAMP:
-		case IGMP_TIMESTAMPREPLY:
-		case IGMP_INFO_REQUEST:
-		case IGMP_INFO_REPLY:
-			verbose(2, "[IGMPProcessPacket]:: IGMP processing for type %d not implemented ", igmphdr->type);
+		case IGMP_MEMBERSHIP_REPORT:
+			verbose(2, "[IGMPProcessPacket]:: IGMP processing for membership report request");
+			IGMPProcessMembershipReport(in_pkt);
 			break;
 	}
 }
@@ -129,7 +121,7 @@ void IGMPProcessTTLExpired(gpacket_t *in_pkt)
 	IPOutgoingPacket(in_pkt, gNtohl(tmpbuf, ipkt->ip_src), 8+iprevlen, 1, IGMP_PROTOCOL);
 }
 
-void IGMPProcessEchoRequest(gpacket_t *in_pkt)
+void IGMPProcessMembershipQuery(gpacket_t *in_pkt)
 {
 	ip_packet_t *ipkt = (ip_packet_t *)in_pkt->data.data;
 	int iphdrlen = ipkt->ip_hdr_len * 4;
@@ -139,8 +131,7 @@ void IGMPProcessEchoRequest(gpacket_t *in_pkt)
 	ushort cksum;
 	int ilen = ntohs(ipkt->ip_pkt_len) - iphdrlen;
 
-
-	igmphdr->type = ICMP_ECHO_REPLY;
+	igmphdr->type = IGMP_MEMBERSHIP_QUERY;
 	igmphdr->checksum = 0;
 	if (IS_ODD(ilen))
 	{
@@ -148,37 +139,36 @@ void IGMPProcessEchoRequest(gpacket_t *in_pkt)
 		icmppkt_b[ilen] = 0x0;
 		ilen++;
 	}
-	cksum = checksum(icmppkt_b, (ilen/2));
+	cksum = checksum(igmppkt_b, (ilen / 2));
 	igmphdr->checksum = htons(cksum);
 	
 	// send the message back to the IP routine for further processing ..
 	// set the messsage as REPLY_PACKET..
 	// destination IP and size need not be set. they can be obtained from the original packet
-	
 	IPOutgoingPacket(in_pkt, NULL, 0, 0, IGMP_PROTOCOL);
 }
 
-void IGMPProcessEchoReply(gpacket_t *in_pkt)
+void IGMPProcessMembershipReport(gpacket_t *in_pkt)
 {
 	ip_packet_t *ipkt = (ip_packet_t *)in_pkt->data.data;
 	int iphdrlen = ipkt->ip_hdr_len *4;
 	igmphdr_t *igmphdr = (igmphdr_t *)((uchar *)ipkt + iphdrlen);
-	uchar *IGMPpkt_b = (uchar *)igmphdr;
+	uchar *igmppkt_b = (uchar *)igmphdr;
 
 	struct timeval tv;
 	struct timezone tz;
 	char tmpbuf[MAX_TMPBUF_LEN];
 	double elapsed_time;
 
-	if (igmphdr->type == IGMP_ECHO_REPLY)
+	if (igmphdr->type == IGMP_MEMBERSHIP_REPORT)
 	{
 		pstat.nreceived++;
 
 		gettimeofday(&tv, &tz);
-		elapsed_time = subTimeVal(&tv, (struct timeval *)(IGMPpkt_b + 8));
+		elapsed_time = subTimeVal(&tv, (struct timeval *)(igmppkt_b + 8));
 		printf("%d bytes from %s: igmp_seq=%d ttl=%d time=%6.3f ms\n", 
 		       (ntohs(ipkt->ip_pkt_len) - iphdrlen - 8),
-		       IP2Dot(tmpbuf, gNtohl((tmpbuf+20), ipkt->ip_src)), 
+		       IP2Dot(tmpbuf, gNtohl((tmpbuf + 20), ipkt->ip_src)), 
 		       ntohs(igmphdr->un.echo.sequence), ipkt->ip_ttl, elapsed_time);
 	}
 }
