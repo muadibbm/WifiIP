@@ -23,8 +23,8 @@
 // Andrey comment: I don't know if the below info has any relevance to the IGMP protocol.
 // Andrey comment: So, I will try to find some stuff online for those constants.
 
-#define IGMP_MEMBERSHIP_QUERY   17
-#define IGMP_MEMBERSHIP_REPORT  18
+#define IGMP_HOST_MEMBERSHIP_QUERY   17
+#define IGMP_HOST_MEMBERSHIP_REPORT  18
 
 /* Codes for UNREACH. */
 #define IGMP_NET_UNREACH        0       /* Network Unreachable          */
@@ -51,6 +51,7 @@ typedef struct _igmphdr_t
 {
 	uchar type;                  /* message type */
 	uchar code;                  /* type sub-code */
+	uchar group;
 	ushort checksum;
 	union _un
 	{

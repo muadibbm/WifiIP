@@ -1,5 +1,8 @@
 #include "igmp.h"
 
+// state information on outstanding ping..
+pingstat_t pstat;
+
 // Andrey comment: We are implementing the IGMPv1 protocol as there will be no leave messages to deal with.
 void IGMPProcessPacket(gpacket_t *in_pkt)
 {
@@ -19,74 +22,6 @@ void IGMPProcessPacket(gpacket_t *in_pkt)
 			IGMPProcessMembershipReport(in_pkt);
 			break;
 	}
-}
-
-/* Send a membership request maybe??
-*/
-void IGMPSendMReq(uchar *ipaddr, int pkt_size, int retries)
-{
-	static int ping_active = 0;
-	int i;
-	char tmpbuf[64];
-
-	// initialize the ping statistics structure
-	pstat.tmin = LARGE_REAL_NUMBER;
-	pstat.tmax = SMALL_REAL_NUMBER;
-	pstat.tsum = 0;
-	pstat.ntransmitted = 0;
-	pstat.nreceived = 0;
-
-	if (ping_active == 0)
-	{
-		printf("Pinging IP Address [%s]\n", IP2Dot(tmpbuf, ipaddr));
-		ping_active = 1;
-		
-		for(i=0; i < retries; i++)
-			IGMPSendReqPacket(ipaddr, pkt_size, i);
-
-		ping_active = 0;
-	}
-
-}
-
-// Send the request packet
-void IGMPSendReqPacket(uchar *dst_ip, int size, int seq)
-{
-	gpacket_t *out_pkt = (gpacket_t *) malloc(sizeof(gpacket_t));
-	ip_packet_t *ipkt = (ip_packet_t *)(out_pkt->data.data);
-	ipkt->ip_hdr_len = 5;                                  // no IP header options!!
-	igmphdr_t *igmphdr = (igmphdr_t *)((uchar *)ipkt + ipkt->ip_hdr_len*4);
-	ushort cksum;
-	struct timeval *tp = (struct timeval *)((uchar *)igmphdr + 8);
-	struct timezone tz;
-	uchar *dataptr;
-	int i;
-	char tmpbuf[64];
-
-	pstat.ntransmitted++;
-
-	igmphdr->type = IGMP_ECHO_REQUEST;
-	igmphdr->code = 0;
-	igmphdr->checksum = 0;
-	igmphdr->un.echo.id = getpid() & 0xFFFF;
-	igmphdr->un.echo.sequence = seq;
-	gettimeofday(tp, &tz);
-
-	dataptr = ((uchar *)igmphdr + 8 +  sizeof(struct timeval));
-	// pad data...
-	for (i = 8; i < size; i++)
-		*dataptr++ = i;
-
-	cksum = checksum((uchar *)igmphdr, size/2);  // size = payload (given) + IGMP_header
-	igmphdr->checksum = htons(cksum);
-
-	verbose(2, "[sendPingPacket]:: Sending... IGMP ping to  %s", IP2Dot(tmpbuf, dst_ip));
-
-	// send the message to the IP routine for further processing
-	// the IP should create new header .. provide needed information from here.
-	// tag the message as new packet
-	// IPOutgoingPacket(/context, packet, IPaddr, size, newflag, source)
-	IPOutgoingPacket(out_pkt, dst_ip, size, 1, IGMP_PROTOCOL);
 }
 
 void IGMPProcessTTLExpired(gpacket_t *in_pkt)
@@ -121,6 +56,7 @@ void IGMPProcessTTLExpired(gpacket_t *in_pkt)
 	IPOutgoingPacket(in_pkt, gNtohl(tmpbuf, ipkt->ip_src), 8+iprevlen, 1, IGMP_PROTOCOL);
 }
 
+// The router requests to see who is in the group
 void IGMPProcessMembershipQuery(gpacket_t *in_pkt)
 {
 	ip_packet_t *ipkt = (ip_packet_t *)in_pkt->data.data;
@@ -131,7 +67,7 @@ void IGMPProcessMembershipQuery(gpacket_t *in_pkt)
 	ushort cksum;
 	int ilen = ntohs(ipkt->ip_pkt_len) - iphdrlen;
 
-	igmphdr->type = IGMP_MEMBERSHIP_QUERY;
+	igmphdr->type = IGMP_HOST_MEMBERSHIP_QUERY;
 	igmphdr->checksum = 0;
 	if (IS_ODD(ilen))
 	{
@@ -148,6 +84,7 @@ void IGMPProcessMembershipQuery(gpacket_t *in_pkt)
 	IPOutgoingPacket(in_pkt, NULL, 0, 0, IGMP_PROTOCOL);
 }
 
+// Report == Client Responce
 void IGMPProcessMembershipReport(gpacket_t *in_pkt)
 {
 	ip_packet_t *ipkt = (ip_packet_t *)in_pkt->data.data;
@@ -160,7 +97,7 @@ void IGMPProcessMembershipReport(gpacket_t *in_pkt)
 	char tmpbuf[MAX_TMPBUF_LEN];
 	double elapsed_time;
 
-	if (igmphdr->type == IGMP_MEMBERSHIP_REPORT)
+	if (igmphdr->type == IGMP_HOST_MEMBERSHIP_REPORT)
 	{
 		pstat.nreceived++;
 
