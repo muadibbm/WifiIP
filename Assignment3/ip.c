@@ -312,6 +312,11 @@ int IPProcessMyPacket(gpacket_t *in_pkt)
 		// further processing with appropriate type code
 		if (ip_pkt->ip_prot == ICMP_PROTOCOL)
 			ICMPProcessPacket(in_pkt);
+			
+		// Is packet IGMP? send it to the IGMP module
+		// further processing with appropriate type code
+		if (ip_pkt->ip_prot == IGMP_PROTOCOL)
+			IGMP_RCV(in_pkt);
 
 		// Is packet UDP/TCP (only UDP implemented now)
 		// May be we can deal with other connectionless protocols as well.

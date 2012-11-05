@@ -3,27 +3,29 @@
 // state information on outstanding ping..
 pingstat_t pstat;
 
-// Andrey comment: We are implementing the IGMPv1 protocol as there will be no leave messages to deal with.
-void IGMPProcessPacket(gpacket_t *in_pkt)
-{
+void IGMP_RCV(gpacket_t *in_pkt) {
+
 	ip_packet_t *ip_pkt = (ip_packet_t *)in_pkt->data.data;
 	int iphdrlen = ip_pkt->ip_hdr_len * 4;
 	igmphdr_t *igmphdr = (igmphdr_t *)((uchar *)ip_pkt + iphdrlen);
-
+	
 	switch (igmphdr->type)
 	{
 		case IGMP_MEMBERSHIP_QUERY:
 			verbose(2, "[IGMPProcessPacket]:: IGMP processing for membership query request");
-			IGMPProcessMembershipQuery(in_pkt);
+			//IGMPProcessMembershipQuery(in_pkt);
 			break;
 
 		case IGMP_MEMBERSHIP_REPORT:
 			verbose(2, "[IGMPProcessPacket]:: IGMP processing for membership report request");
-			IGMPProcessMembershipReport(in_pkt);
+			//IGMPProcessMembershipReport(in_pkt);
 			break;
 	}
 }
 
+// Andrey comment: We are implementing the IGMPv1 protocol as there will be no leave messages to deal with.
+
+/*
 void IGMPProcessTTLExpired(gpacket_t *in_pkt)
 {
 	ip_packet_t *ipkt = (ip_packet_t *)in_pkt->data.data;
@@ -36,15 +38,13 @@ void IGMPProcessTTLExpired(gpacket_t *in_pkt)
 
 	memcpy(prevbytes, (uchar *)ipkt, iprevlen);
 
-	/*
-	 * form an IGMP TTL expired message and fill in IGMP
-	 * header ...
-	 */
+	//form an IGMP TTL expired message and fill in IGMP header
+	
 	igmphdr->type = IGMP_TTL_EXPIRED;
 	igmphdr->code = 0; 
 	igmphdr->checksum = 0;
 	bzero((void *)&(igmphdr->un), sizeof(igmphdr->un));
-	memcpy(((uchar *)igmphdr + 8), prevbytes, iprevlen);    /* ip header + 64 bits of original pkt */
+	memcpy(((uchar *)igmphdr + 8), prevbytes, iprevlen);    //ip header + 64 bits of original pkt
 	cksum = checksum((uchar *)igmphdr, (8 + iprevlen)/2 );
 	igmphdr->checksum = htons(cksum);
 
@@ -107,8 +107,9 @@ void IGMPProcessMembershipReport(gpacket_t *in_pkt)
 		       (ntohs(ipkt->ip_pkt_len) - iphdrlen - 8),
 		       IP2Dot(tmpbuf, gNtohl((tmpbuf + 20), ipkt->ip_src)), 
 		       ntohs(igmphdr->un.echo.sequence), ipkt->ip_ttl, elapsed_time);
-	}
+	} */
 }
+} 
 
 //function to receive the datagram with IP multicast "1110"
 

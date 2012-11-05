@@ -72,10 +72,11 @@ typedef struct _igmphdr_t
 } igmphdr_t;
 
 /* TODO : prototype methods from igmp.c should be inserted here */
-void IGMPProcessPacket(gpacket_t *in_pkt);
-void IGMPSendMReq(uchar *ipaddr, int pkt_size, int retries);
-void IGMPSendReqPacket(uchar *dst_ip, int size, int seq);
-void IGMPProcessTTLExpired(gpacket_t *in_pkt);
-void IGMPProcessEchoRequest(gpacket_t *in_pkt);
-void IGMPProcessEchoReply(gpacket_t *in_pkt);
+void IGMP_RCV(gpacket_t *in_pkt)
+//void IGMPProcessPacket(gpacket_t *in_pkt);
+//void IGMPSendMReq(uchar *ipaddr, int pkt_size, int retries);
+//void IGMPSendReqPacket(uchar *dst_ip, int size, int seq);
+//void IGMPProcessTTLExpired(gpacket_t *in_pkt);
+//void IGMPProcessEchoRequest(gpacket_t *in_pkt);
+//void IGMPProcessEchoReply(gpacket_t *in_pkt);
 #endif
